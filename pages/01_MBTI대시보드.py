@@ -18,7 +18,7 @@ mbti_types = ["INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP",
               "ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"]
 mbti_cols = [c for c in df.columns if c.upper() in mbti_types]
 
-# 국가 선택 컬럼 추정
+# 국가 컬럼 추정
 country_cols = [c for c in df.columns if "country" in c.lower() or c.lower() in ["nation","location","state","region","name"]]
 country_col = country_cols[0] if country_cols else df.columns[0]
 
@@ -28,7 +28,7 @@ st.write("국가를 선택하면 해당 국가의 MBTI 비율을 인터랙티브
 
 selected_country = st.selectbox("국가를 선택하세요:", sorted(df[country_col].unique()))
 
-# 선택된 국가 데이터 추출
+# 선택한 국가 데이터 추출
 row = df[df[country_col] == selected_country].iloc[0]
 mbti_data = row[mbti_cols].astype(float).sort_values(ascending=False).reset_index()
 mbti_data.columns = ["MBTI", "Count"]
@@ -37,8 +37,10 @@ mbti_data.columns = ["MBTI", "Count"]
 total = mbti_data["Count"].sum()
 mbti_data["Ratio"] = mbti_data["Count"] / total * 100
 
-# 색상 지정 (1등은 빨간색, 나머지는 점차 파랑→회색)
-colors = ["#FF4C4C"] + px.colors.sequential.Blues[len(mbti_data)-1]
+# 색상 설정 (1등은 빨간색, 나머지는 파랑 계열 그라데이션)
+grad_colors = px.colors.sequential.Blues[::-1]  # 진한 파랑 → 연한 파랑
+grad_used = grad_colors[:len(mbti_data)-1] if len(mbti_data) > 1 else grad_colors
+colors = ["#FF4C4C"] + grad_used  # 첫 번째 막대(1등)는 빨강
 
 # Plotly 그래프
 fig = px.bar(
